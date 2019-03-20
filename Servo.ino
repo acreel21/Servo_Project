@@ -25,9 +25,10 @@ float output = 0;
 float s = 0;
 float v = 0;
 float Kp = 0;
+float Kpxl = 0.45;
 float Kpl = 0.85;
 float Kpm = 1.75;
-float Kps = 3.35;
+float Kps = 3.15;
 float kg = 0.0133333;
 float time1 = 0;
 float time2 = 0;
@@ -78,7 +79,10 @@ float positionControl(float theta_des, float theta) {
   error = theta_des - theta;
   //Serial.print("Error is: ");
   //Serial.println(error);
-  if (abs(error) > 180){
+  if (abs(error) >= 360){
+    Kp = Kpxl;
+  }
+  else if (abs(error) < 360 && abs(error) >= 180){
     Kp = Kpl;  
   }
   else if (abs(error) > 90 && abs(error) < 180){
@@ -121,19 +125,31 @@ void loop() {
       }
        sign = int(incomingByte[2]);
        number = x;
-       i = 0;
+       //i = 0;
        if (char(0x01) == sign){
          number = (-1)*number;
       }
     }
+    else{
+      Serial1.write("Error: Checksum is Wrong");
+    }
+  }
+  else{
+    Serial1.write("Error: Begining is Wrong");
   }
   theta_des = number;
-  while (theta_des > 360) {
-    theta_des = theta_des - 360;
+  if (theta_des > 720){
+    theta_des = 720;
   }
-  while (theta_des < -360) {
-    theta_des = theta_des + 360;
+  if (theta_des < -720){
+    theta_des = -720;
   }
+  //while (theta_des > 360) {
+    //theta_des = theta_des - 360;
+  //}
+  //while (theta_des < -360) {
+    //theta_des = theta_des + 360;
+  //}
   time1 = micros();
   time2 = micros();
   }
@@ -150,7 +166,7 @@ void loop() {
       }
       else {
         i = i - 1;
-        //Serial.print("i is: ");
+        //Serial.print("B, i is: ");
         //Serial.println((i));
       }
     }
